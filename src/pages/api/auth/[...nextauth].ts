@@ -28,9 +28,13 @@ export const authOptions = {
 			user: {
 				...session.user,
 				id: user.id,
-				namename: user.username
+				username: user.username
 			}
 		})
+	},
+	pages: {
+		signIn: '/login',
+		error: '/login'
 	}
 }
 export default NextAuth(authOptions)
