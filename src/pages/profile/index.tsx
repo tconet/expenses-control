@@ -3,19 +3,21 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/router'
 import { ExclamationIcon } from '@heroicons/react/solid'
 import { useState } from 'react'
-import axios, { AxiosRequestConfig } from 'axios'
 import { Role as PrismaRole } from '@prisma/client'
+import ProfileService from 'src/services/ProfileService'
+import prisma from 'lib/prisma'
+import { getSession } from 'next-auth/react'
 
 function classNames(...classes) {
 	return classes.filter(Boolean).join(' ')
 }
 
-export default function Profile() {
+export default function Profile({ profile, editing }) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors }
-	} = useForm()
+	} = useForm({ defaultValues: profile })
 
 	// The selected profile
 	const [_, setSelectedProfile] = useState<string>()
@@ -25,9 +27,14 @@ export default function Profile() {
 	const onSubmitForm = async (values) => {
 		console.log('Profile.tsx: ', values)
 
-		const res = await axios.post('/api/createprofile', values)
-		if (res.status === 200) {
-			router.push('/')
+		// Use the profile service to create or update
+		const res = !editing
+			? await ProfileService.create(values)
+			: await ProfileService.update(values)
+
+		if (res.status === 201) {
+			// Back to profiles list
+			router.push('/profile/display')
 		}
 	}
 
@@ -53,10 +60,11 @@ export default function Profile() {
 						</div>
 					</div>
 					<div className="mt-5 md:mt-0 md:col-span-2">
+						{/* FORM Profile */}
 						<form onSubmit={handleSubmit(onSubmitForm)}>
 							<div className="shadow sm:rounded-md sm:overflow-hidden">
 								<div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-									{/* E-MAIL e CELULAR */}
+									{/* E-MAIL e CELULAR on the same ROW */}
 									<div className="grid grid-cols-6 gap-6">
 										{/* E-MAIL */}
 										<div className="col-span-6 sm:col-span-3">
@@ -240,13 +248,23 @@ export default function Profile() {
 										</fieldset>
 									</div>
 								</div>
+								{/* SUBMIT BUTTON */}
 								<div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-									<button
-										type="submit"
-										className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-									>
-										Save
-									</button>
+									<div className="flex justify-end gap-2">
+										<button
+											className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+											type="button"
+											onClick={() => router.back()}
+										>
+											Voltar
+										</button>
+										<button
+											type="submit"
+											className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+										>
+											Save
+										</button>
+									</div>
 								</div>
 							</div>
 						</form>
@@ -255,4 +273,48 @@ export default function Profile() {
 			</div>
 		</Layout>
 	)
+}
+
+export const getServerSideProps = async (context) => {
+	const { isNew, id } = context.query
+	const session = await getSession(context)
+	var editing = false
+
+	if (!session || isNew) {
+		return {
+			props: {
+				session: null,
+				profile: null,
+				editing
+			}
+		}
+	}
+
+	var profile = null
+	if (id) {
+		// Get the profile by id
+		profile = await prisma.profile.findFirst({
+			where: {
+				id: id
+			}
+		})
+	} else {
+		// Get the profile .
+		profile = await prisma.profile.findFirst({
+			where: {
+				User: {
+					email: session.user.email
+				}
+			}
+		})
+	}
+	if (profile) editing = true
+
+	return {
+		props: {
+			session,
+			profile,
+			editing
+		}
+	}
 }

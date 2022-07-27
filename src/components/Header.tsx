@@ -2,16 +2,28 @@ import { signIn, signOut, useSession } from 'next-auth/react'
 import { Fragment } from 'react'
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
+import Link from 'next/link'
 
 const navigation = [
-	{ name: 'Dashboard', href: '#', current: true },
-	{ name: 'Team', href: '#', current: false },
+	{ name: 'Dashboard', href: '/', current: true },
+	{ name: 'Profiles', href: '/profile/display', current: false },
 	{ name: 'Projects', href: '#', current: false },
 	{ name: 'Calendar', href: '#', current: false }
 ]
 
 function classNames(...classes) {
 	return classes.filter(Boolean).join(' ')
+}
+
+/**
+ * <p>
+ * Set the current selected navigation item
+ * @param current Current selected navigation item
+ */
+const onItemClick = async (current) => {
+	navigation.map((item) => {
+		item.current = item.name === current.name
+	})
 }
 
 export default function Header() {
@@ -53,19 +65,20 @@ export default function Header() {
 								<div className="hidden sm:block sm:ml-6">
 									<div className="flex space-x-4">
 										{navigation.map((item) => (
-											<a
-												key={item.name}
-												href={item.href}
-												className={classNames(
-													item.current
-														? 'bg-gray-900 text-white'
-														: 'text-gray-300 hover:bg-gray-700 hover:text-white',
-													'px-3 py-2 rounded-md text-sm font-medium'
-												)}
-												aria-current={item.current ? 'page' : undefined}
-											>
-												{item.name}
-											</a>
+											<Link key={item.name} href={item.href}>
+												<a
+													onClick={(e) => onItemClick(item)}
+													className={classNames(
+														item.current
+															? 'bg-gray-900 text-white'
+															: 'text-gray-300 hover:bg-gray-700 hover:text-white',
+														'px-3 py-2 rounded-md text-sm font-medium'
+													)}
+													aria-current={item.current ? 'page' : undefined}
+												>
+													{item.name}
+												</a>
+											</Link>
 										))}
 									</div>
 								</div>
@@ -138,15 +151,16 @@ export default function Header() {
 										<Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
 											<Menu.Item>
 												{({ active }) => (
-													<a
-														href="/profile"
+													<div
 														className={classNames(
 															active ? 'bg-gray-100' : '',
-															'block px-4 py-2 text-sm text-gray-700'
+															'block px-4 py-2 text-sm text-gray-700 cursor-pointer'
 														)}
 													>
-														Your Profile
-													</a>
+														<Link href="/profile/display">
+															<a>Profiles</a>
+														</Link>
+													</div>
 												)}
 											</Menu.Item>
 											<Menu.Item>
