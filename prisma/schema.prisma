@@ -1,5 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// npm install -g dotenv-cli
+// dotenv -e .env.local -- npx prisma studio
+// pscale connect expenses initial-setup
 
 generator client {
   provider        = "prisma-client-js"
@@ -66,7 +69,6 @@ enum Role {
 }
 
 model Profile {
-
   id     String  @id @default(cuid())
   email  String  @unique
   bio    String?
@@ -74,4 +76,25 @@ model Profile {
   role   Role
   User   User?   @relation(fields: [userId], references: [id])
   userId String?
+}
+
+model Category {
+  id    String  @id @default(cuid())
+  name  String
+  image String?
+}
+
+enum StockType {
+  STOCK
+  FII
+}
+
+model Stocks {
+  id           String    @id @default(cuid())
+  symbol       String
+  company_name String
+  document     String
+  description  String
+  stockType    StockType @default(STOCK)
+  image        String?
 }

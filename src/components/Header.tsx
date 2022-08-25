@@ -1,13 +1,14 @@
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { Fragment } from 'react'
-import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { Avatar } from 'primereact/avatar'
 import Link from 'next/link'
 
 const navigation = [
 	{ name: 'Dashboard', href: '/', current: true },
-	{ name: 'Profiles', href: '/profile/display', current: false },
-	{ name: 'Projects', href: '#', current: false },
+	{ name: 'Perfis', href: '/profile/display', current: false },
+	{ name: 'Categorias', href: '/category', current: false },
 	{ name: 'Calendar', href: '#', current: false }
 ]
 
@@ -89,7 +90,7 @@ export default function Header() {
 									className="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
 								>
 									<span className="sr-only">View notifications</span>
-									<BellIcon className="h-6 w-6" aria-hidden="true" />
+									<i className="pi pi-bell" style={{ fontSize: '1.5em' }}></i>
 								</button>
 
 								{/* Profile dropdown */}
@@ -98,14 +99,15 @@ export default function Header() {
 										<Menu.Button className="bg-gray-800 flex text-sm rounded-full">
 											{/* Logged in */}
 											{session && (
-												<div className="flex items-center space-x-4">
-													<img
-														className="w-12 h-12 rounded-full"
-														src={session?.user?.image}
-														alt="perfil"
+												<div className="flex items-center">
+													<Avatar
+														image={session?.user?.image}
+														className="mr-2"
+														size="large"
+														shape="circle"
 													/>
-													<div className="space-y-1 font-medium dark:text-white grid justify-items-start">
-														<div className="text-xs text-indigo-400 hover:text-slate-500">
+													<div className="font-medium dark:text-white">
+														<div className="text-xs text-indigo-400 hover:text-slate-500 text-left">
 															{session?.user?.name}
 														</div>
 														<div className="text-sm text-slate-50 hover:text-slate-500">
